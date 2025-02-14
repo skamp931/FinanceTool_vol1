@@ -19,15 +19,11 @@ def get_dividends_from_minkabu(stock_code):
     
     # 配当金データを取得
     dividends = []
-    table = soup.find("table", class_="md_table")
-    if table:
-        rows = table.find_all("tr")
-        for row in rows[1:]:  # ヘッダーをスキップ
-            cols = row.find_all("td")
-            if len(cols) > 1:
-                year = cols[0].text.strip()
-                dividend = cols[1].text.strip()
-                dividends.append((year, dividend))
+    dividend_elements = soup.find_all("span", class_="dividend-state__amount__integer")
+    for element in dividend_elements:
+        year = element.find_previous("th").text.strip()  # 年度を取得
+        dividend = element.text.strip()
+        dividends.append((year, dividend))
     
     return dividends
 
