@@ -1,5 +1,7 @@
+import streamlit as st
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd
 
 def get_financial_data(stock_code):
     url = f"https://minkabu.jp/stock/{stock_code}/settlement"
@@ -27,7 +29,11 @@ def get_financial_data(stock_code):
         "per": per
     }
 
-# 使用例
-stock_code = "7203"  # トヨタ自動車の例
-financial_data = get_financial_data(stock_code)
-print(financial_data)
+st.title("財務データ取得ツール")
+
+stock_code = st.text_input("銘柄コードを入力してください", "7203")  # デフォルトはトヨタ自動車
+
+if st.button("データ取得"):
+    financial_data = get_financial_data(stock_code)
+    df = pd.DataFrame(financial_data)
+    st.write(df)
