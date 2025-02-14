@@ -2,6 +2,7 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
+import japanize_matplotlib
 
 st.title("財務データ取得ツール (yfinance)")
 
