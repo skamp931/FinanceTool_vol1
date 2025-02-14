@@ -45,39 +45,43 @@ if st.button("データ取得"):
         st.write(f"資産価値: {asset_value:.2f}")
         st.write(f"理論株価: {theoretical_stock_price:.2f}")
         
-        st.write("財務データ (Income Statement)")
-        st.write(financials.rename(index={
-            'Total Revenue': '総収入',
-            'Cost Of Revenue': '売上原価',
-            'Gross Profit': '粗利益',
-            'Operating Income': '営業利益',
-            'Net Income': '純利益',
-            'Net Income From Continuing Operation Net Minority Interest': '継続事業からの純利益（少数株主持分を除く）',
-            'Reconciled Depreciation': '調整後減価償却費',
-            'Reconciled Cost Of Revenue': '調整後売上原価',
-            'EBITDA': '税引前利益、利息、減価償却前利益',
-            'EBIT': '税引前利益、利息前利益',
-            'Net Interest Income': '純利息収入',
-            'Interest Expense': '支払利息',
-            'Interest Income': '受取利息',
-            'Normalized Income': '正常化利益',
-            'Net Income From Continuing And Discontinued Operation': '継続および非継続事業からの純利益'
-        }))
+        # 3か年の経常利益と株価収益率
+        net_income = financials.loc['Net Income']
+        pe_ratio = stock.info['trailingPE']
         
-        st.write("バランスシート (Balance Sheet)")
-        st.write(balance_sheet.rename(index={
-            'Total Assets': '総資産',
-            'Total Liabilities Net Minority Interest': '負債合計',
-            'Total Equity Gross Minority Interest': '自己資本合計',
-            'Cash And Cash Equivalents': '現金及び現金同等物'
-        }))
+        fig, ax1 = plt.subplots()
+        ax1.set_xlabel('Year')
+        ax1.set_ylabel('Net Income', color='tab:blue')
+        ax1.plot(net_income.index, net_income.values, color='tab:blue', label='Net Income')
+        ax1.tick_params(axis='y', labelcolor='tab:blue')
         
-        st.write("キャッシュフロー (Cash Flow)")
-        st.write(cashflow.rename(index={
-            'Total Cash From Operating Activities': '営業活動によるキャッシュフロー',
-            'Total Cashflows From Investing Activities': '投資活動によるキャッシュフロー',
-            'Total Cash From Financing Activities': '財務活動によるキャッシュフロー'
-        }))
+        ax2 = ax1.twinx()
+        ax2.set_ylabel('P/E Ratio', color='tab:red')
+        ax2.plot(net_income.index, [pe_ratio] * len(net_income.index), color='tab:red', linestyle='--', label='P/E Ratio')
+        ax2.tick_params(axis='y', labelcolor='tab:red')
+        
+        fig.tight_layout()
+        st.pyplot(fig)
+        
+        # 3か年の自己資本率
+        equity_ratio = balance_sheet.loc['Total Equity Gross Minority Interest'] / balance_sheet.loc['Total Assets']
+        
+        plt.figure()
+        plt.plot(equity_ratio.index, equity_ratio.values, marker='o')
+        plt.title('3か年の自己資本率')
+        plt.xlabel('Year')
+        plt.ylabel('Equity Ratio')
+        st.pyplot(plt)
+        
+        # 3か年の配当金
+        dividends = stock.dividends
+        
+        plt.figure()
+        plt.plot(dividends.index, dividends.values, marker='o')
+        plt.title('3か年の配当金')
+        plt.xlabel('Year')
+        plt.ylabel('Dividends')
+        st.pyplot(plt)
 
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
