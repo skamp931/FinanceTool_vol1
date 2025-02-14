@@ -33,7 +33,7 @@ def get_dividends_from_minkabu(stock_code):
 
 st.title("財務データ取得ツール (yfinance)")
 
-stock_code = st.text_input("銘柄コードを入力してください", "7203.T")  # 日本の銘柄の場合、".T"を付ける
+stock_code = st.text_input("銘柄コードを入力してください", "7203")  # 日本の銘柄の場合、".T"を付ける
 
 financials = None
 balance_sheet = None
@@ -41,7 +41,7 @@ cashflow = None
 
 if st.button("データ取得"):
     try:
-        stock = yf.Ticker(stock_code)
+        stock = yf.Ticker(stock_code+".T")
         financials = stock.financials
         balance_sheet = stock.balance_sheet
         cashflow = stock.cashflow
@@ -132,7 +132,7 @@ if st.button("データ取得"):
         # 使用例
         st.write("配当金")
 
-        dividends = get_dividends_from_minkabu("2929")
+        dividends = get_dividends_from_minkabu(stock_code)
         st.write(dividends)
 
         if dividends:
