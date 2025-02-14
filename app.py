@@ -18,15 +18,11 @@ def get_dividends_from_minkabu(stock_code):
     soup = BeautifulSoup(response.content, "html.parser")
     
     # 配当金データを取得
-    dividends = []
     dividend_elements = soup.find_all("span", class_="dividend-state__amount__integer")
     st.write(dividend_elements)
-    for element in dividend_elements:
-        year = element.find_previous("th").text.strip()  # 年度を取得
-        dividend = element.text.strip()
-        dividends.append((year, dividend))
+    dividend = element.text.strip().replace('.', '')  # 小数点を削除して整数部分のみ取得
     
-    return dividends
+    return dividend
 
 st.title("財務データ取得ツール (yfinance)")
 
