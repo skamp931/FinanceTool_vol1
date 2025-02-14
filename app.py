@@ -6,6 +6,11 @@ import pandas as pd
 def get_financial_data(stock_code):
     url = f"https://minkabu.jp/stock/{stock_code}/settlement"
     response = requests.get(url)
+    
+    if response.status_code != 200:
+        st.error(f"データ取得に失敗しました。ステータスコード: {response.status_code}")
+        return None
+    
     soup = BeautifulSoup(response.content, "html.parser")
     
     # 経常利益を取得
@@ -35,5 +40,8 @@ stock_code = st.text_input("銘柄コードを入力してください", "7203")
 
 if st.button("データ取得"):
     financial_data = get_financial_data(stock_code)
-    df = pd.DataFrame(financial_data)
-    st.write(df)
+    if financial_data:
+        df = pd.DataFrame(financial_data)
+        st.write(df)
+    else:
+        st.error("データを取得できませんでした。")
