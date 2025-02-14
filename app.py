@@ -18,6 +18,7 @@ if st.button("データ取得"):
         financials = stock.financials
         balance_sheet = stock.balance_sheet
         cashflow = stock.cashflow
+
         
         # 会社名と現在の株価を取得
         company_name = stock.info['longName']
@@ -83,6 +84,7 @@ if st.button("データ取得"):
         
         # 3か年の配当金
         dividends = stock.dividends
+        st.write(dividends)
         
         plt.figure()
         plt.plot(dividends.index, dividends.values, marker='o')
