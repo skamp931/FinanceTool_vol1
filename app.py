@@ -18,6 +18,10 @@ if st.button("データ取得"):
         balance_sheet = stock.balance_sheet
         cashflow = stock.cashflow
         
+        # 会社名と現在の株価を取得
+        company_name = stock.info['longName']
+        current_price = stock.history(period="1d")['Close'].iloc[-1]
+        
         # 必要なデータを取得
         net_income = financials.loc['Net Income'].iloc[0]
         total_assets = balance_sheet.loc['Total Assets'].iloc[0]
@@ -39,6 +43,8 @@ if st.button("データ取得"):
         theoretical_stock_price = asset_value + business_value
         
         # 結果の表示
+        st.write(f"会社名: {company_name}")
+        st.write(f"現在の株価: {current_price:.2f} 円")
         st.write(f"PER: {per:.2f}")
         st.write(f"ROA: {roa:.2f}")
         st.write(f"BPS: {bps:.2f}")
@@ -47,17 +53,17 @@ if st.button("データ取得"):
         st.write(f"理論株価: {theoretical_stock_price:.2f}")
         
         # 3か年の経常利益と株価収益率
-        net_income = financials.loc['Net Income']
+        net_income = financials.loc['Net Income'] / 1e8  # 億単位に変換
         pe_ratio = stock.info['trailingPE']
         
         fig, ax1 = plt.subplots()
-        ax1.set_xlabel('Year')
-        ax1.set_ylabel('Net Income', color='tab:blue')
-        ax1.plot(net_income.index, net_income.values, color='tab:blue', label='Net Income')
+        ax1.set_xlabel('年')
+        ax1.set_ylabel('経常利益 (億円)', color='tab:blue')
+        ax1.plot(net_income.index, net_income.values, color='tab:blue', label='経常利益')
         ax1.tick_params(axis='y', labelcolor='tab:blue')
         
         ax2 = ax1.twinx()
-        ax2.set_ylabel('P/E Ratio', color='tab:red')
+        ax2.set_ylabel('株価収益率 (P/E Ratio)', color='tab:red')
         ax2.plot(net_income.index, [pe_ratio] * len(net_income.index), color='tab:red', linestyle='--', label='P/E Ratio')
         ax2.tick_params(axis='y', labelcolor='tab:red')
         
@@ -70,8 +76,8 @@ if st.button("データ取得"):
         plt.figure()
         plt.plot(equity_ratio.index, equity_ratio.values, marker='o')
         plt.title('3か年の自己資本率')
-        plt.xlabel('Year')
-        plt.ylabel('Equity Ratio')
+        plt.xlabel('年')
+        plt.ylabel('自己資本率')
         st.pyplot(plt)
         
         # 3か年の配当金
@@ -80,9 +86,9 @@ if st.button("データ取得"):
         plt.figure()
         plt.plot(dividends.index, dividends.values, marker='o')
         plt.title('3か年の配当金')
-        plt.xlabel('Year')
-        plt.ylabel('Dividends')
+        plt.xlabel('年')
+        plt.ylabel('配当金')
         st.pyplot(plt)
-
+        
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
