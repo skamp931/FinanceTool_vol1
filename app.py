@@ -21,7 +21,7 @@ def get_dividends_from_minkabu(stock_code):
     dividend_elements = soup.find("span", class_="dividend-state__amount__integer")
     st.write(dividend_elements.contents)
     dividend = str(dividend_elements.contents).replace('.', '')+"円"
-    
+
     return dividend
 
 st.title("財務データ取得ツール (yfinance)")
@@ -127,10 +127,6 @@ if st.button("データ取得"):
 
         dividends = get_dividends_from_minkabu(stock_code)
         st.write(dividends)
-
-        if dividends:
-            for year, dividend in dividends:
-                st.write(f"{year}: {dividend}")
 
 
     except Exception as e:
