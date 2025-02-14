@@ -20,7 +20,7 @@ def get_dividends_from_minkabu(stock_code):
     # 配当金データを取得
     dividend_elements = soup.find_all("span", class_="dividend-state__amount__integer")
     st.write(dividend_elements)
-    dividend = element.text.strip().replace('.', '')  # 小数点を削除して整数部分のみ取得
+    dividend = dividend_elements.text.strip().replace('.', '')  # 小数点を削除して整数部分のみ取得
     
     return dividend
 
