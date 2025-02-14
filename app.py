@@ -16,12 +16,14 @@ def get_dividends_from_minkabu(stock_code):
         return None
     
     soup = BeautifulSoup(response.content, "html.parser")
-    dividend = ""
+    
     # 配当金データを取得
     dividend_elements = soup.find("span", class_="dividend-state__amount__integer")
-    st.write(dividend_elements.contents)
-    dividend = str(dividend_elements.contents).replace('.', '')+"円"
-
+    if dividend_elements:
+        dividend = ''.join(dividend_elements.contents).replace('.', '') + "円"
+    else:
+        dividend = "データが見つかりませんでした"
+    
     return dividend
 
 st.title("財務データ取得ツール (yfinance)")
