@@ -132,7 +132,7 @@ if st.button("データ取得"):
         # 使用例
         st.write("配当金")
 
-        dividends = get_dividends_from_minkabu(stock_code)
+        dividends = get_dividends_from_minkabu("2929")
         st.write(dividends)
 
         if dividends:
