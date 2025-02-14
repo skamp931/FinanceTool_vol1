@@ -1,47 +1,26 @@
 import streamlit as st
-import requests
-from bs4 import BeautifulSoup
+import yfinance as yf
 import pandas as pd
 
-def get_financial_data(stock_code):
-    url = f"https://minkabu.jp/stock/{stock_code}/settlement"
-    response = requests.get(url)
-    
-    if response.status_code != 200:
-        st.error(f"データ取得に失敗しました。ステータスコード: {response.status_code}")
-        return None
-    
-    soup = BeautifulSoup(response.content, "html.parser")
-    
-    # 経常利益を取得
-    operating_income = []
-    for tag in soup.find_all("td", class_="operating_income"):
-        operating_income.append(tag.text.strip())
-    
-    # 自己資本率を取得
-    equity_ratio = []
-    for tag in soup.find_all("td", class_="equity_ratio"):
-        equity_ratio.append(tag.text.strip())
-    
-    # PERを取得
-    per = []
-    for tag in soup.find_all("td", class_="per"):
-        per.append(tag.text.strip())
-    
-    return {
-        "operating_income": operating_income,
-        "equity_ratio": equity_ratio,
-        "per": per
-    }
+st.title("財務データ取得ツール (yfinance)")
 
-st.title("財務データ取得ツール")
-
-stock_code = st.text_input("銘柄コードを入力してください", "7203")  # デフォルトはトヨタ自動車
+stock_code = st.text_input("銘柄コードを入力してください", "7203.T")  # 日本の銘柄の場合、".T"を付ける
 
 if st.button("データ取得"):
-    financial_data = get_financial_data(stock_code)
-    if financial_data:
-        df = pd.DataFrame(financial_data)
-        st.write(df)
-    else:
-        st.error("データを取得できませんでした。")
+    try:
+        stock = yf.Ticker(stock_code)
+        financials = stock.financials
+        balance_sheet = stock.balance_sheet
+        cashflow = stock.cashflow
+        
+        st.write("財務データ")
+        st.write(financials)
+        
+        st.write("バランスシート")
+        st.write(balance_sheet)
+        
+        st.write("キャッシュフロー")
+        st.write(cashflow)
+        
+    except Exception as e:
+        st.error(f"データを取得できませんでした: {e}")
