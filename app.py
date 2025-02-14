@@ -19,7 +19,17 @@ if st.button("データ取得"):
             'Cost Of Revenue': '売上原価',
             'Gross Profit': '粗利益',
             'Operating Income': '営業利益',
-            'Net Income': '純利益'
+            'Net Income': '純利益',
+            'Net Income From Continuing Operation Net Minority Interest': '継続事業からの純利益（少数株主持分を除く）',
+            'Reconciled Depreciation': '調整後減価償却費',
+            'Reconciled Cost Of Revenue': '調整後売上原価',
+            'EBITDA': '税引前利益、利息、減価償却前利益',
+            'EBIT': '税引前利益、利息前利益',
+            'Net Interest Income': '純利息収入',
+            'Interest Expense': '支払利息',
+            'Interest Income': '受取利息',
+            'Normalized Income': '正常化利益',
+            'Net Income From Continuing And Discontinued Operation': '継続および非継続事業からの純利益'
         }))
         
         st.write("バランスシート (Balance Sheet)")
