@@ -4,6 +4,33 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import japanize_matplotlib
 
+import requests
+from bs4 import BeautifulSoup
+
+def get_dividends_from_minkabu(stock_code):
+    url = f"https://minkabu.jp/stock/{stock_code}/dividend"
+    response = requests.get(url)
+    
+    if response.status_code != 200:
+        print(f"データ取得に失敗しました。ステータスコード: {response.status_code}")
+        return None
+    
+    soup = BeautifulSoup(response.content, "html.parser")
+    
+    # 配当金データを取得
+    dividends = []
+    table = soup.find("table", class_="md_table")
+    if table:
+        rows = table.find_all("tr")
+        for row in rows[1:]:  # ヘッダーをスキップ
+            cols = row.find_all("td")
+            if len(cols) > 1:
+                year = cols[0].text.strip()
+                dividend = cols[1].text.strip()
+                dividends.append((year, dividend))
+    
+    return dividends
+
 st.title("財務データ取得ツール (yfinance)")
 
 stock_code = st.text_input("銘柄コードを入力してください", "7203.T")  # 日本の銘柄の場合、".T"を付ける
@@ -85,7 +112,7 @@ if st.button("データ取得"):
         # 3か年の配当金
         dividends = stock.dividends
         st.write(dividends)
-        
+
         plt.figure()
         plt.plot(dividends.index, dividends.values, marker='o')
         plt.title('3か年の配当金')
@@ -102,5 +129,12 @@ if st.button("データ取得"):
         st.write("キャッシュフロー (Cash Flow)")
         st.write(cashflow)
         
+        # 使用例
+        dividends = get_dividends_from_minkabu(stock_code)
+        if dividends:
+            for year, dividend in dividends:
+                st.write(f"{year}: {dividend}")
+
+
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
