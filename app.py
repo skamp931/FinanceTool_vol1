@@ -130,7 +130,11 @@ if st.button("データ取得"):
         st.write(cashflow)
         
         # 使用例
+        st.write("配当金")
+
         dividends = get_dividends_from_minkabu(stock_code)
+        st.write(dividends)
+
         if dividends:
             for year, dividend in dividends:
                 st.write(f"{year}: {dividend}")
