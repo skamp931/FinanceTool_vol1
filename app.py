@@ -48,9 +48,6 @@ def save_to_google_sheet(data):
         # データを保存
         worksheet.append_row(data)
         st.write("データを保存しました。")
-        
-    except Exception as e:
-        st.error(f"エラーが発生しました: {e}")
 
 st.title("財務データ取得ツール (yfinance)")
 
