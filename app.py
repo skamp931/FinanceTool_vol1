@@ -37,7 +37,7 @@ def save_to_google_sheet(data):
         st.write("Google API認証に成功しました。")
         
         # スプレッドシートを開く
-        spreadsheet = client.open_by_key("1CojC1jRmnDuKILj4w7u2JvVoXSwTzJ85EXAOgb0bTiY")
+        spreadsheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1CojC1jRmnDuKILj4w7u2JvVoXSwTzJ85EXAOgb0bTiY/edit?gid=0#gid=0")
         st.write("スプレッドシートを開きました。")
         
         # 今日の日付と時分秒を含むシートを追加
