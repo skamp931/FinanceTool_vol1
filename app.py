@@ -116,6 +116,8 @@ if st.button("データ取得"):
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
 
+st.write(data)
+
 if st.button("google保存"):
     st.write("保存を開始します。")
     stock = yf.Ticker(stock_code+".T")
