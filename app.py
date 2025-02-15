@@ -113,3 +113,7 @@ if st.button("データ取得"):
         
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
+
+if st.button("google確認"):
+    save_to_google_sheet("1")
+    st.success("データがGoogleスプレッドシートに保存されました。")
