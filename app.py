@@ -118,6 +118,49 @@ if st.button("データ取得"):
 
 if st.button("google保存"):
     st.write("保存を開始します。")
+    stock = yf.Ticker(stock_code+".T")
+    financials = stock.financials
+    balance_sheet = stock.balance_sheet
+    cashflow = stock.cashflow
+
+    # 会社名と現在の株価を取得
+    company_name = stock.info['longName']
+    current_price = stock.history(period="1d")['Close'].iloc[-1]
+    
+    # 必要なデータを取得
+    net_income = financials.loc['Net Income'].iloc[0]
+    total_assets = balance_sheet.loc['Total Assets'].iloc[0]
+    total_equity = balance_sheet.loc['Total Equity Gross Minority Interest'].iloc[0]
+    shares_outstanding = stock.info['sharesOutstanding']
+    market_price = stock.history(period="1d")['Close'].iloc[-1]
+    
+    # PER, ROA, BPSの計算
+    per = market_price / (net_income / shares_outstanding)
+    roa = net_income / total_assets
+    bps = total_equity / shares_outstanding
+    equity_ratio = total_equity / total_assets
+    
+    # 事業価値と資産価値の計算
+    business_value = per * 15 * roa * 10 * (1 / equity_ratio + 0.33)
+    asset_value = bps * equity_ratio
+    
+    # 理論株価の計算
+    theoretical_stock_price = asset_value + business_value
+    
+    # 結果の表示
+    st.write(f"会社名: {company_name}")
+    st.write(f"現在の株価: {current_price:.2f} 円")
+    st.write(f"PER: {per:.2f}")
+    st.write(f"ROA: {roa:.2f}")
+    st.write(f"BPS: {bps:.2f}")
+    st.write(f"事業価値: {business_value:.2f}")
+    st.write(f"資産価値: {asset_value:.2f}")
+    st.write(f"理論株価: {theoretical_stock_price:.2f}")
+    
+    # 配当金の表示
+    dividends = get_dividends_from_minkabu(stock_code)
+    st.write(f"配当金: {dividends}")
+
     data = [company_name, current_price, per, roa, bps, business_value, asset_value, theoretical_stock_price, dividends]
     save_to_google_sheet(data)
     st.success("データがGoogleスプレッドシートに保存されました。")
