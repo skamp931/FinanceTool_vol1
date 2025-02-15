@@ -29,24 +29,28 @@ def get_dividends_from_minkabu(stock_code):
     return dividend
 
 def save_to_google_sheet(data):
-    # Google APIの認証情報を設定
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["web"], scope)
-    client = gspread.authorize(creds)
-    st.write("Google API認証に成功しました。")
-    
-    # スプレッドシートを開く
-    spreadsheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1CojC1jRmnDuKILj4w7u2JvVoXSwTzJ85EXAOgb0bTiY/edit?gid=0#gid=0")
-    st.write("スプレッドシートを開きました。")
-    
-    # 今日の日付と時分秒を含むシートを追加
-    sheet_name = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    worksheet = spreadsheet.add_worksheet(title=sheet_name, rows="100", cols="20")
-    st.write(f"新しいシート '{sheet_name}' を追加しました。")
-    
-    # データを保存
-    worksheet.append_row(data)
-    st.write("データを保存しました。")
+    try:
+        # Google APIの認証情報を設定
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["web"], scope)
+        client = gspread.authorize(creds)
+        st.write("Google API認証に成功しました。")
+        
+        # スプレッドシートを開く
+        spreadsheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1CojC1jRmnDuKILj4w7u2JvVoXSwTzJ85EXAOgb0bTiY/edit?gid=0#gid=0")
+        st.write("スプレッドシートを開きました。")
+        
+        # 今日の日付と時分秒を含むシートを追加
+        sheet_name = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        worksheet = spreadsheet.add_worksheet(title=sheet_name, rows="100", cols="20")
+        st.write(f"新しいシート '{sheet_name}' を追加しました。")
+        
+        # データを保存
+        worksheet.append_row(data)
+        st.write("データを保存しました。")
+        
+    except Exception as e:
+        st.error(f"エラーが発生しました: {e}")
 
 st.title("財務データ取得ツール (yfinance)")
 
@@ -109,7 +113,3 @@ if st.button("データ取得"):
         
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
-
-if st.button("google確認"):
-    save_to_google_sheet("1")
-    st.success("データがGoogleスプレッドシートに保存されました。")
