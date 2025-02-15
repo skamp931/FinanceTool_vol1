@@ -107,6 +107,7 @@ if st.button("データ取得"):
 
         data = [company_name, current_price, per, roa, bps, business_value, asset_value, theoretical_stock_price, dividends]
 
+        st.write(data)
         # 保存ボタン
         if st.button("結果を保存"):
             st.write("保存を開始します。")
