@@ -104,13 +104,19 @@ if st.button("データ取得"):
         # 配当金の表示
         dividends = get_dividends_from_minkabu(stock_code)
         st.write(f"配当金: {dividends}")
-        
+
+        data = [company_name, current_price, per, roa, bps, business_value, asset_value, theoretical_stock_price, dividends]
+
         # 保存ボタン
         if st.button("結果を保存"):
             st.write("保存を開始します。")
-            data = [company_name, current_price, per, roa, bps, business_value, asset_value, theoretical_stock_price, dividends]
             save_to_google_sheet(data)
             st.success("データがGoogleスプレッドシートに保存されました。")
         
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
+
+if st.button("google保存"):
+    st.write("保存を開始します。")
+    save_to_google_sheet(data)
+    st.success("データがGoogleスプレッドシートに保存されました。")
