@@ -37,7 +37,7 @@ def save_to_google_sheet(data):
         st.write("Google API認証に成功しました。")
         
         # スプレッドシートを開く
-        spreadsheet = client.open("streamlit_finacetool")
+        spreadsheet = client.open("1CojC1jRmnDuKILj4w7u2JvVoXSwTzJ85EXAOgb0bTiY")
         st.write("スプレッドシートを開きました。")
         
         # 今日の日付と時分秒を含むシートを追加
