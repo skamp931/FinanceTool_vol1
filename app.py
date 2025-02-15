@@ -3,9 +3,11 @@ import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
 import japanize_matplotlib
-
 import requests
 from bs4 import BeautifulSoup
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+from datetime import datetime
 
 def get_dividends_from_minkabu(stock_code):
     url = f"https://minkabu.jp/stock/{stock_code}/dividend"
@@ -26,9 +28,25 @@ def get_dividends_from_minkabu(stock_code):
     
     return dividend
 
+def save_to_google_sheet(data):
+    # Google APIの認証情報を設定
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["web"], scope)
+    client = gspread.authorize(creds)
+    
+    # スプレッドシートを開く
+    spreadsheet = client.open("streamlit_finacetool")
+    
+    # 今日の日付と時分秒を含むシートを追加
+    sheet_name = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    worksheet = spreadsheet.add_worksheet(title=sheet_name, rows="100", cols="20")
+    
+    # データを保存
+    worksheet.append_row(data)
+
 st.title("財務データ取得ツール (yfinance)")
 
-stock_code = st.text_input("銘柄コードを入力してください", "7203")  # 日本の銘柄の場合、".T"を付ける
+stock_code = st.text_input("銘柄コードを入力してください")  # 日本の銘柄の場合、".T"を付ける
 
 financials = None
 balance_sheet = None
@@ -41,7 +59,6 @@ if st.button("データ取得"):
         balance_sheet = stock.balance_sheet
         cashflow = stock.cashflow
 
-        
         # 会社名と現在の株価を取得
         company_name = stock.info['longName']
         current_price = stock.history(period="1d")['Close'].iloc[-1]
@@ -76,60 +93,15 @@ if st.button("データ取得"):
         st.write(f"資産価値: {asset_value:.2f}")
         st.write(f"理論株価: {theoretical_stock_price:.2f}")
         
-        # 3か年の経常利益と株価収益率
-        net_income = financials.loc['Net Income'] / 1e8  # 億単位に変換
-        pe_ratio = stock.info['trailingPE']
-        
-        fig, ax1 = plt.subplots()
-        ax1.set_xlabel('年')
-        ax1.set_ylabel('経常利益 (億円)', color='tab:blue')
-        ax1.plot(net_income.index, net_income.values, color='tab:blue', label='経常利益')
-        ax1.tick_params(axis='y', labelcolor='tab:blue')
-        
-        ax2 = ax1.twinx()
-        ax2.set_ylabel('株価収益率 (P/E Ratio)', color='tab:red')
-        ax2.plot(net_income.index, [pe_ratio] * len(net_income.index), color='tab:red', linestyle='--', label='P/E Ratio')
-        ax2.tick_params(axis='y', labelcolor='tab:red')
-        
-        fig.tight_layout()
-        st.pyplot(fig)
-        
-        # 3か年の自己資本率
-        equity_ratio = balance_sheet.loc['Total Equity Gross Minority Interest'] / balance_sheet.loc['Total Assets']
-        
-        plt.figure()
-        plt.plot(equity_ratio.index, equity_ratio.values, marker='o')
-        plt.title('3か年の自己資本率')
-        plt.xlabel('年')
-        plt.ylabel('自己資本率')
-        st.pyplot(plt)
-        
-        # 3か年の配当金
-        dividends = stock.dividends
-        st.write(dividends)
-
-        plt.figure()
-        plt.plot(dividends.index, dividends.values, marker='o')
-        plt.title('3か年の配当金')
-        plt.xlabel('年')
-        plt.ylabel('配当金')
-        st.pyplot(plt)
-
-        st.write("財務データ (Income Statement)")
-        st.write(financials)
-        
-        st.write("バランスシート (Balance Sheet)")
-        st.write(balance_sheet)
-        
-        st.write("キャッシュフロー (Cash Flow)")
-        st.write(cashflow)
-        
-        # 使用例
-        st.write("配当金")
-
+        # 配当金の表示
         dividends = get_dividends_from_minkabu(stock_code)
-        st.write(dividends)
-
-
+        st.write(f"配当金: {dividends}")
+        
+        # 保存ボタン
+        if st.button("結果を保存"):
+            data = [company_name, current_price, per, roa, bps, business_value, asset_value, theoretical_stock_price, dividends]
+            save_to_google_sheet(data)
+            st.success("データがGoogleスプレッドシートに保存されました。")
+        
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
