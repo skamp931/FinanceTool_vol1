@@ -107,6 +107,7 @@ if st.button("データ取得"):
         
         # 保存ボタン
         if st.button("結果を保存"):
+            st.write("保存を開始します。")
             data = [company_name, current_price, per, roa, bps, business_value, asset_value, theoretical_stock_price, dividends]
             save_to_google_sheet(data)
             st.success("データがGoogleスプレッドシートに保存されました。")
