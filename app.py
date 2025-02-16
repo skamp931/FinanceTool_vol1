@@ -37,7 +37,7 @@ def save_to_google_sheet(data):
     st.write("Google API認証に成功しました。")
     
     # スプレッドシートを開く
-    spreadsheet = client.open("streamlit_finacetool")
+    spreadsheet = client.open_by_key("1CojC1jRmnDuKILj4w7u2JvVoXSwTzJ85EXAOgb0bTiY")
     st.write("スプレッドシートを開きました。")
     
     # 今日の日付と時分秒を含むシートを追加
@@ -124,7 +124,7 @@ if st.button("データ取得"):
             net_income_3y.plot(kind='bar', title='3か年の経常利益 (億円)', fontsize=8)
             plt.xlabel('年度', fontsize=8)
             plt.ylabel('経常利益 (億円)', fontsize=8)
-            plt.xticks(rotation=45, fontsize=8)
+            plt.xticks(fontsize=8)
             plt.yticks(fontsize=8)
             plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in net_income_3y.index])
             st.pyplot(plt)
@@ -143,7 +143,7 @@ if st.button("データ取得"):
                 df_cashflow.plot(kind='bar', title='3か年のキャッシュフロー (億円)', fontsize=8)
                 plt.xlabel('年度', fontsize=8)
                 plt.ylabel('キャッシュフロー (億円)', fontsize=8)
-                plt.xticks(rotation=45, fontsize=8)
+                plt.xticks(fontsize=8)
                 plt.yticks(fontsize=8)
                 plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in df_cashflow.index])
                 plt.legend(fontsize=8)
@@ -157,12 +157,12 @@ if st.button("データ取得"):
             equity_ratio_3y.plot(kind='bar', title='3か年の自己資本比率 (%)', fontsize=8)
             plt.xlabel('年度', fontsize=8)
             plt.ylabel('自己資本比率 (%)', fontsize=8)
-            plt.xticks(rotation=45, fontsize=8)
+            plt.xticks(fontsize=8)
             plt.yticks(fontsize=8)
             plt.ylim(0, 100)  # Set the maximum value to 100%
             plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in equity_ratio_3y.index])
             st.pyplot(plt)
-            
+
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
 
