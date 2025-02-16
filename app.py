@@ -29,7 +29,6 @@ def get_dividends_from_minkabu(stock_code):
     return dividend
 
 def save_to_google_sheet(data):
-#    try:
     # Google APIの認証情報を設定
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
@@ -45,15 +44,17 @@ def save_to_google_sheet(data):
     worksheet = spreadsheet.add_worksheet(title=sheet_name, rows="100", cols="20")
     st.write(f"新しいシート '{sheet_name}' を追加しました。")
     
-    # Convert all data to strings
-    data_as_strings = [[str(item) for item in row] for row in data]
+    # ヘッダー行を追加
+    header = ["会社名", "現在の株価 (円)", "PER (株価収益率)", "ROA (総資産利益率, %)", "BPS (1株当たり純資産, 円)", 
+              "事業価値 (円)", "資産価値 (円)", "理論株価 (円)", "配当金 (円)"]
+    worksheet.append_row(header)
+    
+    # Convert all data to strings and ensure numerical data is integer
+    data_as_strings = [[str(item) if isinstance(item, str) else str(int(item)) for item in row] for row in data]
     
     # データを保存
     worksheet.append_rows(data_as_strings)
     st.write("データを保存しました。")
-    
-#    except Exception as e:
-#        st.error(f"エラーが発生しました: {e}")
 
 #main
 st.title("財務データ取得ツール")
@@ -103,7 +104,7 @@ if st.button("データ取得"):
             # 結果の表示
             st.write(f"会社名: {company_name}")
             st.write(f"現在の株価: {current_price:.2f} 円")
-            st.write(f"PER (株価収益率): {per * 100:.2f}%")
+            st.write(f"PER (株価収益率): {per:.2f}")
             st.write(f"ROA (総資産利益率): {roa * 100:.2f}%")
             st.write(f"BPS (1株当たり純資産): {bps:.2f}")
             st.write(f"事業価値: {business_value:.2f}")
@@ -119,49 +120,57 @@ if st.button("データ取得"):
                         
             # グラフの作成
             # 3か年の経常利益
-            plt.figure()
-            net_income_3y = financials.loc['Net Income'].iloc[:3] / 1e8  # 最新3か年を取得し、億円単位
-            net_income_3y.plot(kind='bar', title='3か年の経常利益 (億円)', fontsize=8)
-            plt.xlabel('年度', fontsize=8)
-            plt.ylabel('経常利益 (億円)', fontsize=8)
-            plt.xticks(fontsize=8)
-            plt.yticks(fontsize=8)
-            plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in net_income_3y.index])
-            st.pyplot(plt)
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                plt.figure()
+                net_income_3y = financials.loc['Net Income'].iloc[:3] / 1e8  # 最新3か年を取得し、億円単位
+                net_income_3y.plot(kind='bar', title='3か年の経常利益 (億円)', fontsize=8)
+                plt.axhline(y=0, color='gray', linestyle='--', linewidth=0.8)  # Add horizontal line at y=0
+                plt.xlabel('年度', fontsize=8)
+                plt.ylabel('経常利益 (億円)', fontsize=8)
+                plt.xticks(rotation=90, fontsize=8)
+                plt.yticks(fontsize=8)
+                plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in net_income_3y.index])
+                st.pyplot(plt)
 
             # 3か年のキャッシュフロー
-            try:
-                plt.figure()
-                cashflow_operating = cashflow.loc['Operating Cash Flow'].iloc[:3] / 1e8
-                cashflow_financing = cashflow.loc['Financing Cash Flow'].iloc[:3] / 1e8
-                cashflow_investing = cashflow.loc['Investing Cash Flow'].iloc[:3] / 1e8
-                df_cashflow = pd.DataFrame({
-                    '営業キャッシュフロー': cashflow_operating,
-                    '財務キャッシュフロー': cashflow_financing,
-                    '投資キャッシュフロー': cashflow_investing
-                })
-                df_cashflow.plot(kind='bar', title='3か年のキャッシュフロー (億円)', fontsize=8)
-                plt.xlabel('年度', fontsize=8)
-                plt.ylabel('キャッシュフロー (億円)', fontsize=8)
-                plt.xticks(fontsize=8)
-                plt.yticks(fontsize=8)
-                plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in df_cashflow.index])
-                plt.legend(fontsize=8)
-                st.pyplot(plt)
-            except KeyError as e:
-                st.error(f"キャッシュフローデータが見つかりません: {e}")
+            with col2:
+                try:
+                    plt.figure()
+                    cashflow_operating = cashflow.loc['Operating Cash Flow'].iloc[:3] / 1e8
+                    cashflow_financing = cashflow.loc['Financing Cash Flow'].iloc[:3] / 1e8
+                    cashflow_investing = cashflow.loc['Investing Cash Flow'].iloc[:3] / 1e8
+                    df_cashflow = pd.DataFrame({
+                        '営業キャッシュフロー': cashflow_operating,
+                        '財務キャッシュフロー': cashflow_financing,
+                        '投資キャッシュフロー': cashflow_investing
+                    })
+                    df_cashflow.plot(kind='bar', title='3か年のキャッシュフロー (億円)', fontsize=8)
+                    plt.axhline(y=0, color='gray', linestyle='--', linewidth=0.8)  # Add horizontal line at y=0
+                    plt.xlabel('年度', fontsize=8)
+                    plt.ylabel('キャッシュフロー (億円)', fontsize=8)
+                    plt.xticks(rotation=90, fontsize=8)
+                    plt.yticks(fontsize=8)
+                    plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in df_cashflow.index])
+                    plt.legend(fontsize=8)
+                    st.pyplot(plt)
+                except KeyError as e:
+                    st.error(f"キャッシュフローデータが見つかりません: {e}")
 
             # 3か年の自己資本比率
-            plt.figure()
-            equity_ratio_3y = (balance_sheet.loc['Total Equity Gross Minority Interest'].iloc[:3] / balance_sheet.loc['Total Assets'].iloc[:3]) * 100
-            equity_ratio_3y.plot(kind='bar', title='3か年の自己資本比率 (%)', fontsize=8)
-            plt.xlabel('年度', fontsize=8)
-            plt.ylabel('自己資本比率 (%)', fontsize=8)
-            plt.xticks(fontsize=8)
-            plt.yticks(fontsize=8)
-            plt.ylim(0, 100)  # Set the maximum value to 100%
-            plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in equity_ratio_3y.index])
-            st.pyplot(plt)
+            with col3:
+                plt.figure()
+                equity_ratio_3y = (balance_sheet.loc['Total Equity Gross Minority Interest'].iloc[:3] / balance_sheet.loc['Total Assets'].iloc[:3]) * 100
+                equity_ratio_3y.plot(kind='bar', title='3か年の自己資本比率 (%)', fontsize=8)
+                plt.axhline(y=0, color='gray', linestyle='--', linewidth=0.8)  # Add horizontal line at y=0
+                plt.xlabel('年度', fontsize=8)
+                plt.ylabel('自己資本比率 (%)', fontsize=8)
+                plt.xticks(rotation=90, fontsize=8)
+                plt.yticks(fontsize=8)
+                plt.ylim(0, 100)  # Set the maximum value to 100%
+                plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in equity_ratio_3y.index])
+                st.pyplot(plt)
 
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
