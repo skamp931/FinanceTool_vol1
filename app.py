@@ -78,8 +78,6 @@ if st.button("データ取得"):
             cashflow = stock.cashflow
 
             # 会社名と現在の株価を取得
-#            company_name = stock.info['longName']
-#            current_price = stock.history(period="1d")['Close'].iloc[-1]
             company_name = stock.info.get('longName', '不明な会社名')
             current_price = stock.history(period="1d")['Close'].iloc[-1]
 
@@ -105,7 +103,7 @@ if st.button("データ取得"):
             theoretical_stock_price = asset_value + business_value
             
             # 結果の表示
-            st.write(f"会社名: {company_name}")
+            st.write(f"銘柄コード: {stock_code}, 会社名: {company_name}")
             st.write(f"現在の株価: {current_price:.2f} 円")
             st.write(f"PER (株価収益率): {per:.2f}")
             st.write(f"ROA (総資産利益率): {roa * 100:.2f}%")
@@ -120,10 +118,6 @@ if st.button("データ取得"):
             
             # Store data in session state
             st.session_state.data.append([company_name, current_price, per, roa, bps, business_value, asset_value, theoretical_stock_price, dividends])
-                        
-            # 会社名と現在の株価を取得
-            company_name = stock.info.get('longName', '不明な会社名')
-            current_price = stock.history(period="1d")['Close'].iloc[-1]
 
             # グラフの作成
             # 3か年の経常利益
@@ -131,16 +125,25 @@ if st.button("データ取得"):
 
             with col1:
                 plt.figure()
-                net_income_3y = financials.loc['Net Income'].iloc[:3][::-1] / 1e8  # 最新3か年を取得し、億円単位
-                net_income_3y.plot(kind='bar', title='3か年の経常利益 (億円)', fontsize=8)
-                plt.axhline(y=0, color='gray', linestyle='--', linewidth=0.8)  # y=0に水平線を追加
-                plt.xlabel('年度', fontsize=8)
-                plt.ylabel('経常利益 (億円)', fontsize=8)
-                plt.xticks(rotation=0, fontsize=8)
-                plt.yticks(fontsize=8)
-                plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in net_income_3y.index])
-                st.pyplot(plt)
+                try:
+                    net_income_3y = financials.loc['Net Income'].iloc[:3][::-1] / 1e8  # 最新3か年を取得し、億円単位
+                    if len(net_income_3y) < 2:
+                        st.error("経常利益データが不足しています。")
+                    else:
+                        net_income_3y.plot(kind='bar', title='3か年の経常利益 (億円)', fontsize=8)
+                        plt.axhline(y=0, color='gray', linestyle='--', linewidth=0.8)  # y=0に水平線を追加
+                        plt.xlabel('年度', fontsize=8)
+                        plt.ylabel('経常利益 (億円)', fontsize=8)
+                        plt.xticks(rotation=0, fontsize=8)
+                        plt.yticks(fontsize=8)
+                        plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in net_income_3y.index])
+                        st.pyplot(plt)
 
+                        # 経常利益が前年より増えている場合にマークをつける
+                        if net_income_3y.iloc[0] > net_income_3y.iloc[1]:
+                            st.write("経常利益が前年より増加しています。✅")
+                except IndexError:
+                    st.error("経常利益データが不足しています。")
             # 3か年のキャッシュフロー
             with col2:
                 try:
