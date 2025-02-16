@@ -53,12 +53,11 @@ def save_to_google_sheet(data):
         st.error(f"エラーが発生しました: {e}")
 
 st.title("財務データ取得ツール (yfinance)")
-
 stock_code = st.text_input("銘柄コードを入力してください")  # 日本の銘柄の場合、".T"を付ける
 
-financials = None
-balance_sheet = None
-cashflow = None
+# Initialize session state for data
+if 'data' not in st.session_state:
+    st.session_state.data = None
 
 if st.button("データ取得"):
     try:
@@ -90,32 +89,41 @@ if st.button("データ取得"):
         
         # 理論株価の計算
         theoretical_stock_price = asset_value + business_value
-        
+                
         # 結果の表示
         st.write(f"会社名: {company_name}")
         st.write(f"現在の株価: {current_price:.2f} 円")
-        st.write(f"PER: {per:.2f}")
-        st.write(f"ROA: {roa:.2f}")
-        st.write(f"BPS: {bps:.2f}")
+        st.write(f"PER (株価収益率): {per:.2f}")
+        st.write(f"ROA (総資産利益率): {roa * 100:.2f}%")
+        st.write(f"BPS (1株当たり純資産): {bps:.2f}")
         st.write(f"事業価値: {business_value:.2f}")
         st.write(f"資産価値: {asset_value:.2f}")
         st.write(f"理論株価: {theoretical_stock_price:.2f}")
-        
+              
         # 配当金の表示
         dividends = get_dividends_from_minkabu(stock_code)
         st.write(f"配当金: {dividends}")
-
-        data = [company_name, current_price, per, roa, bps, business_value, asset_value, theoretical_stock_price, dividends]
-
+        
+        # Store data in session state
+        st.session_state.data = [company_name, current_price, per, roa, bps, business_value, asset_value, theoretical_stock_price, dividends]
         
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
 
+        # 備考として計算式を表示
+    st.write("備考:")
+    st.write("事業価値 = PER * 15 * ROA * 10 * (1 / 自己資本比率 + 0.33)")
+    st.write("資産価値 = BPS * 自己資本比率")
+    st.write("理論株価 = 資産価値 + 事業価値")  
 
 # 保存ボタン
 if st.button("結果を保存"):
-    st.write(data)
-    st.write("保存を開始します。")
-    save_to_google_sheet(data)
-    st.success("データがGoogleスプレッドシートに保存されました。")
+    if st.session_state.data:
+        st.write(st.session_state.data)
+        st.write("保存を開始します。")
+        save_to_google_sheet(st.session_state.data)
+        st.success("データがGoogleスプレッドシートに保存されました。")
+    else:
+        st.error("データがありません。最初にデータを取得してください。")
+
 
