@@ -29,31 +29,31 @@ def get_dividends_from_minkabu(stock_code):
     return dividend
 
 def save_to_google_sheet(data):
-    try:
-        # Google APIの認証情報を設定
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
-        client = gspread.authorize(creds)
-        st.write("Google API認証に成功しました。")
-        
-        # スプレッドシートを開く
-        spreadsheet = client.open("streamlit_finacetool")
-        st.write("スプレッドシートを開きました。")
-        
-        # 今日の日付と時分秒を含むシートを追加
-        sheet_name = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-        worksheet = spreadsheet.add_worksheet(title=sheet_name, rows="100", cols="20")
-        st.write(f"新しいシート '{sheet_name}' を追加しました。")
-        
-        # Convert all data to strings
-        data_as_strings = [[str(item) for item in row] for row in data]
-        
-        # データを保存
-        worksheet.append_rows(data_as_strings)
-        st.write("データを保存しました。")
-        
-    except Exception as e:
-        st.error(f"エラーが発生しました: {e}")
+#    try:
+    # Google APIの認証情報を設定
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+    client = gspread.authorize(creds)
+    st.write("Google API認証に成功しました。")
+    
+    # スプレッドシートを開く
+    spreadsheet = client.open("streamlit_finacetool")
+    st.write("スプレッドシートを開きました。")
+    
+    # 今日の日付と時分秒を含むシートを追加
+    sheet_name = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    worksheet = spreadsheet.add_worksheet(title=sheet_name, rows="100", cols="20")
+    st.write(f"新しいシート '{sheet_name}' を追加しました。")
+    
+    # Convert all data to strings
+    data_as_strings = [[str(item) for item in row] for row in data]
+    
+    # データを保存
+    worksheet.append_rows(data_as_strings)
+    st.write("データを保存しました。")
+    
+#    except Exception as e:
+#        st.error(f"エラーが発生しました: {e}")
 
 #main
 st.title("財務データ取得ツール")
@@ -121,15 +121,13 @@ if st.button("データ取得"):
             # 3か年の経常利益
             plt.figure()
             net_income_3y = financials.loc['Net Income'].iloc[:3] / 1e8  # 最新3か年を取得し、億円単位
-            net_income_3y.plot(kind='bar', title='3か年の経常利益 (億円)')
-            plt.xlabel('年度')
-            plt.ylabel('経常利益 (億円)')
-            plt.xticks(rotation=45)
+            net_income_3y.plot(kind='bar', title='3か年の経常利益 (億円)', fontsize=8)
+            plt.xlabel('年度', fontsize=8)
+            plt.ylabel('経常利益 (億円)', fontsize=8)
+            plt.xticks(rotation=45, fontsize=8)
+            plt.yticks(fontsize=8)
+            plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in net_income_3y.index])
             st.pyplot(plt)
-
-            # cashflowデータフレームの内容を表示
-            st.write("キャッシュフローデータ:")
-            st.write(cashflow)
 
             # 3か年のキャッシュフロー
             try:
@@ -142,11 +140,13 @@ if st.button("データ取得"):
                     '財務キャッシュフロー': cashflow_financing,
                     '投資キャッシュフロー': cashflow_investing
                 })
-                df_cashflow.plot(kind='bar', title='3か年のキャッシュフロー (億円)')
-                plt.xlabel('年度')
-                plt.ylabel('キャッシュフロー (億円)')
-                plt.xticks(rotation=45)
-                plt.legend()
+                df_cashflow.plot(kind='bar', title='3か年のキャッシュフロー (億円)', fontsize=8)
+                plt.xlabel('年度', fontsize=8)
+                plt.ylabel('キャッシュフロー (億円)', fontsize=8)
+                plt.xticks(rotation=45, fontsize=8)
+                plt.yticks(fontsize=8)
+                plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in df_cashflow.index])
+                plt.legend(fontsize=8)
                 st.pyplot(plt)
             except KeyError as e:
                 st.error(f"キャッシュフローデータが見つかりません: {e}")
@@ -154,11 +154,15 @@ if st.button("データ取得"):
             # 3か年の自己資本比率
             plt.figure()
             equity_ratio_3y = (balance_sheet.loc['Total Equity Gross Minority Interest'].iloc[:3] / balance_sheet.loc['Total Assets'].iloc[:3]) * 100
-            equity_ratio_3y.plot(kind='bar', title='3か年の自己資本比率 (%)')
-            plt.xlabel('年度')
-            plt.ylabel('自己資本比率 (%)')
-            plt.xticks(rotation=45)
-            st.pyplot(plt)        
+            equity_ratio_3y.plot(kind='bar', title='3か年の自己資本比率 (%)', fontsize=8)
+            plt.xlabel('年度', fontsize=8)
+            plt.ylabel('自己資本比率 (%)', fontsize=8)
+            plt.xticks(rotation=45, fontsize=8)
+            plt.yticks(fontsize=8)
+            plt.ylim(0, 100)  # Set the maximum value to 100%
+            plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in equity_ratio_3y.index])
+            st.pyplot(plt)
+            
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
 
