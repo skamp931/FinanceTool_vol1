@@ -83,12 +83,21 @@ if st.button("データ取得"):
 
             
             # 必要なデータを取得
-            net_income = financials.loc['Net Income'].iloc[0]
-            total_assets = balance_sheet.loc['Total Assets'].iloc[0]
-            total_equity = balance_sheet.loc['Total Equity Gross Minority Interest'].iloc[0]
+            if not financials.empty:
+                net_income = financials.loc['Net Income'].iloc[0]
+            else:
+                st.error("経常利益データが見つかりません。")
+
+            if not balance_sheet.empty:
+                total_assets = balance_sheet.loc['Total Assets'].iloc[0]
+                total_equity = balance_sheet.loc['Total Equity Gross Minority Interest'].iloc[0]
+            else:
+                st.error("バランスシートデータが見つかりません。")
+
             shares_outstanding = stock.info['sharesOutstanding']
             market_price = stock.history(period="1d")['Close'].iloc[-1]
-            
+  
+
             # PER, ROA, BPSの計算
             per = market_price / (net_income / shares_outstanding)
             roa = net_income / total_assets
@@ -121,12 +130,19 @@ if st.button("データ取得"):
 
             # グラフの作成
             # 3か年の経常利益
+
+            if len(financials.loc['Net Income']) >= 3:
+                net_income_3y = financials.loc['Net Income'].iloc[:3][::-1] / 1e8  # 最新3か年を取得し、億円単位
+            else:
+                st.error("経常利益データが不足しています。")
+
             col1, col2, col3 = st.columns(3)
 
             with col1:
                 plt.figure()
                 try:
                     net_income_3y = financials.loc['Net Income'].iloc[:3][::-1] / 1e8  # 最新3か年を取得し、億円単位
+
                     if len(net_income_3y) < 2:
                         st.error("経常利益データが不足しています。")
                     else:
@@ -140,8 +156,8 @@ if st.button("データ取得"):
                         st.pyplot(plt)
 
                         # 経常利益が前年より増えている場合にマークをつける
-                        if net_income_3y.iloc[0] > net_income_3y.iloc[1]:
-                            st.write("経常利益が前年より増加しています。✅")
+                        if net_income_3y.iloc[2] > net_income_3y.iloc[1]:
+                            st.write("経常利益が前年より増加✅")
                 except IndexError:
                     st.error("経常利益データが不足しています。")
             # 3か年のキャッシュフロー
