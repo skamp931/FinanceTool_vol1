@@ -126,19 +126,26 @@ if st.button("データ取得"):
             plt.ylabel('経常利益 (億円)')
             st.pyplot(plt)
 
+            # cashflowデータフレームの内容を表示
+            st.write("キャッシュフローデータ:")
+            st.write(cashflow)
+
             # 3か年のキャッシュフロー
-            plt.figure()
-            cashflow_operating = cashflow.loc['Total Cash From Operating Activities'] / 1e8
-            cashflow_financing = cashflow.loc['Total Cash From Financing Activities'] / 1e8
-            cashflow_investing = cashflow.loc['Total Cashflows From Investing Activities'] / 1e8
-            plt.plot(cashflow_operating.index, cashflow_operating.values, label='営業キャッシュフロー')
-            plt.plot(cashflow_financing.index, cashflow_financing.values, label='財務キャッシュフロー')
-            plt.plot(cashflow_investing.index, cashflow_investing.values, label='投資キャッシュフロー')
-            plt.title('3か年のキャッシュフロー (億円)')
-            plt.xlabel('年度')
-            plt.ylabel('キャッシュフロー (億円)')
-            plt.legend()
-            st.pyplot(plt)
+            try:
+                plt.figure()
+                cashflow_operating = cashflow.loc['Total Cash From Operating Activities'] / 1e8
+                cashflow_financing = cashflow.loc['Total Cash From Financing Activities'] / 1e8
+                cashflow_investing = cashflow.loc['Total Cashflows From Investing Activities'] / 1e8
+                plt.plot(cashflow_operating.index, cashflow_operating.values, label='営業キャッシュフロー')
+                plt.plot(cashflow_financing.index, cashflow_financing.values, label='財務キャッシュフロー')
+                plt.plot(cashflow_investing.index, cashflow_investing.values, label='投資キャッシュフロー')
+                plt.title('3か年のキャッシュフロー (億円)')
+                plt.xlabel('年度')
+                plt.ylabel('キャッシュフロー (億円)')
+                plt.legend()
+                st.pyplot(plt)
+            except KeyError as e:
+                st.error(f"キャッシュフローデータが見つかりません: {e}")
 
             # 3か年の自己資本比率
             plt.figure()
