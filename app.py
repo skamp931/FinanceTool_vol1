@@ -49,9 +49,11 @@ def save_to_google_sheet(data):
               "事業価値 (円)", "資産価値 (円)", "理論株価 (円)", "配当金 (円)"]
     worksheet.append_row(header)
     
-    # Convert all data to strings and ensure numerical data is integer
-    data_as_strings = [[str(item) if isinstance(item, str) else str(int(item)) for item in row] for row in data]
-    
+    # データを文字列に変換し、数値データは整数に変換
+    data_as_strings = [
+        [str(item) if isinstance(item, str) else str(int(float(item))) for item in row]
+        for row in data
+    ]
     # データを保存
     worksheet.append_rows(data_as_strings)
     st.write("データを保存しました。")
