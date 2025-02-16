@@ -116,14 +116,15 @@ if st.button("データ取得"):
             
             # Store data in session state
             st.session_state.data.append([company_name, current_price, per, roa, bps, business_value, asset_value, theoretical_stock_price, dividends])
-            
+                        
             # グラフの作成
             # 3か年の経常利益
             plt.figure()
-            net_income_3y = financials.loc['Net Income'] / 1e8  # 億円単位
+            net_income_3y = financials.loc['Net Income'].iloc[:3] / 1e8  # 最新3か年を取得し、億円単位
             net_income_3y.plot(kind='bar', title='3か年の経常利益 (億円)')
             plt.xlabel('年度')
             plt.ylabel('経常利益 (億円)')
+            plt.xticks(rotation=45)
             st.pyplot(plt)
 
             # cashflowデータフレームの内容を表示
@@ -133,15 +134,18 @@ if st.button("データ取得"):
             # 3か年のキャッシュフロー
             try:
                 plt.figure()
-                cashflow_operating = cashflow.loc['Operating Cash Flow'] / 1e8
-                cashflow_financing = cashflow.loc['Financing Cash Flow'] / 1e8
-                cashflow_investing = cashflow.loc['Investing Cash Flow'] / 1e8
-                plt.plot(cashflow_operating.index, cashflow_operating.values, label='営業キャッシュフロー')
-                plt.plot(cashflow_financing.index, cashflow_financing.values, label='財務キャッシュフロー')
-                plt.plot(cashflow_investing.index, cashflow_investing.values, label='投資キャッシュフロー')
-                plt.title('3か年のキャッシュフロー (億円)')
+                cashflow_operating = cashflow.loc['Operating Cash Flow'].iloc[:3] / 1e8
+                cashflow_financing = cashflow.loc['Financing Cash Flow'].iloc[:3] / 1e8
+                cashflow_investing = cashflow.loc['Investing Cash Flow'].iloc[:3] / 1e8
+                df_cashflow = pd.DataFrame({
+                    '営業キャッシュフロー': cashflow_operating,
+                    '財務キャッシュフロー': cashflow_financing,
+                    '投資キャッシュフロー': cashflow_investing
+                })
+                df_cashflow.plot(kind='bar', title='3か年のキャッシュフロー (億円)')
                 plt.xlabel('年度')
                 plt.ylabel('キャッシュフロー (億円)')
+                plt.xticks(rotation=45)
                 plt.legend()
                 st.pyplot(plt)
             except KeyError as e:
@@ -149,12 +153,12 @@ if st.button("データ取得"):
 
             # 3か年の自己資本比率
             plt.figure()
-            equity_ratio_3y = (balance_sheet.loc['Total Equity Gross Minority Interest'] / balance_sheet.loc['Total Assets']) * 100
+            equity_ratio_3y = (balance_sheet.loc['Total Equity Gross Minority Interest'].iloc[:3] / balance_sheet.loc['Total Assets'].iloc[:3]) * 100
             equity_ratio_3y.plot(kind='bar', title='3か年の自己資本比率 (%)')
             plt.xlabel('年度')
             plt.ylabel('自己資本比率 (%)')
-            st.pyplot(plt)
-        
+            plt.xticks(rotation=45)
+            st.pyplot(plt)        
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
 
