@@ -133,9 +133,9 @@ if st.button("データ取得"):
             # 3か年のキャッシュフロー
             try:
                 plt.figure()
-                cashflow_operating = cashflow.loc['Total Cash From Operating Activities'] / 1e8
-                cashflow_financing = cashflow.loc['Total Cash From Financing Activities'] / 1e8
-                cashflow_investing = cashflow.loc['Total Cashflows From Investing Activities'] / 1e8
+                cashflow_operating = cashflow.loc['Operating Cash Flow'] / 1e8
+                cashflow_financing = cashflow.loc['Financing Cash Flow'] / 1e8
+                cashflow_investing = cashflow.loc['Investing Cash Flow'] / 1e8
                 plt.plot(cashflow_operating.index, cashflow_operating.values, label='営業キャッシュフロー')
                 plt.plot(cashflow_financing.index, cashflow_financing.values, label='財務キャッシュフロー')
                 plt.plot(cashflow_investing.index, cashflow_investing.values, label='投資キャッシュフロー')
