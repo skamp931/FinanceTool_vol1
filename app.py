@@ -32,12 +32,12 @@ def save_to_google_sheet(data):
     try:
         # Google APIの認証情報を設定
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["web"], scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
         client = gspread.authorize(creds)
         st.write("Google API認証に成功しました。")
         
         # スプレッドシートを開く
-        spreadsheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1CojC1jRmnDuKILj4w7u2JvVoXSwTzJ85EXAOgb0bTiY/edit?gid=0#gid=0")
+        spreadsheet = client.open("streamlit_finacetool")
         st.write("スプレッドシートを開きました。")
         
         # 今日の日付と時分秒を含むシートを追加
@@ -45,14 +45,18 @@ def save_to_google_sheet(data):
         worksheet = spreadsheet.add_worksheet(title=sheet_name, rows="100", cols="20")
         st.write(f"新しいシート '{sheet_name}' を追加しました。")
         
+        # Convert all data to strings
+        data_as_strings = [[str(item) for item in row] for row in data]
+        
         # データを保存
-        worksheet.append_row(data)
+        worksheet.append_rows(data_as_strings)
         st.write("データを保存しました。")
         
     except Exception as e:
         st.error(f"エラーが発生しました: {e}")
 
-st.title("財務データ取得ツール (yfinance)")
+#main
+st.title("財務データ取得ツール")
 
 stock_codes = st.text_input("銘柄コードをカンマ区切りで入力してください")  # 日本の銘柄の場合、".T"を付ける
 
@@ -61,6 +65,9 @@ if 'data' not in st.session_state:
     st.session_state.data = []
 
 if st.button("データ取得"):
+
+    st.session_state.data = []
+
     try:
         for stock_code in stock_codes.split(','):
             stock_code = stock_code.strip()  # Remove any leading/trailing whitespace
@@ -109,6 +116,37 @@ if st.button("データ取得"):
             
             # Store data in session state
             st.session_state.data.append([company_name, current_price, per, roa, bps, business_value, asset_value, theoretical_stock_price, dividends])
+            
+            # グラフの作成
+            # 3か年の経常利益
+            plt.figure()
+            net_income_3y = financials.loc['Net Income'] / 1e8  # 億円単位
+            net_income_3y.plot(kind='bar', title='3か年の経常利益 (億円)')
+            plt.xlabel('年度')
+            plt.ylabel('経常利益 (億円)')
+            st.pyplot(plt)
+
+            # 3か年のキャッシュフロー
+            plt.figure()
+            cashflow_operating = cashflow.loc['Total Cash From Operating Activities'] / 1e8
+            cashflow_financing = cashflow.loc['Total Cash From Financing Activities'] / 1e8
+            cashflow_investing = cashflow.loc['Total Cashflows From Investing Activities'] / 1e8
+            plt.plot(cashflow_operating.index, cashflow_operating.values, label='営業キャッシュフロー')
+            plt.plot(cashflow_financing.index, cashflow_financing.values, label='財務キャッシュフロー')
+            plt.plot(cashflow_investing.index, cashflow_investing.values, label='投資キャッシュフロー')
+            plt.title('3か年のキャッシュフロー (億円)')
+            plt.xlabel('年度')
+            plt.ylabel('キャッシュフロー (億円)')
+            plt.legend()
+            st.pyplot(plt)
+
+            # 3か年の自己資本比率
+            plt.figure()
+            equity_ratio_3y = (balance_sheet.loc['Total Equity Gross Minority Interest'] / balance_sheet.loc['Total Assets']) * 100
+            equity_ratio_3y.plot(kind='bar', title='3か年の自己資本比率 (%)')
+            plt.xlabel('年度')
+            plt.ylabel('自己資本比率 (%)')
+            st.pyplot(plt)
         
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
@@ -129,4 +167,3 @@ if st.button("結果を保存"):
         st.success("データがGoogleスプレッドシートに保存されました。")
     else:
         st.error("データがありません。最初にデータを取得してください。")
-        
