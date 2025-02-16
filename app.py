@@ -129,7 +129,7 @@ if st.button("データ取得"):
                 plt.axhline(y=0, color='gray', linestyle='--', linewidth=0.8)  # Add horizontal line at y=0
                 plt.xlabel('年度', fontsize=8)
                 plt.ylabel('経常利益 (億円)', fontsize=8)
-                plt.xticks(rotation=90, fontsize=8)
+                plt.xticks(rotation=0, fontsize=8)
                 plt.yticks(fontsize=8)
                 plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in net_income_3y.index])
                 st.pyplot(plt)
@@ -150,7 +150,7 @@ if st.button("データ取得"):
                     plt.axhline(y=0, color='gray', linestyle='--', linewidth=0.8)  # Add horizontal line at y=0
                     plt.xlabel('年度', fontsize=8)
                     plt.ylabel('キャッシュフロー (億円)', fontsize=8)
-                    plt.xticks(rotation=90, fontsize=8)
+                    plt.xticks(rotation=0, fontsize=8)
                     plt.yticks(fontsize=8)
                     plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in df_cashflow.index])
                     plt.legend(fontsize=8)
@@ -166,7 +166,7 @@ if st.button("データ取得"):
                 plt.axhline(y=0, color='gray', linestyle='--', linewidth=0.8)  # Add horizontal line at y=0
                 plt.xlabel('年度', fontsize=8)
                 plt.ylabel('自己資本比率 (%)', fontsize=8)
-                plt.xticks(rotation=90, fontsize=8)
+                plt.xticks(rotation=0, fontsize=8)
                 plt.yticks(fontsize=8)
                 plt.ylim(0, 100)  # Set the maximum value to 100%
                 plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in equity_ratio_3y.index])
