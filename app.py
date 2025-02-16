@@ -78,8 +78,11 @@ if st.button("データ取得"):
             cashflow = stock.cashflow
 
             # 会社名と現在の株価を取得
-            company_name = stock.info['longName']
+#            company_name = stock.info['longName']
+#            current_price = stock.history(period="1d")['Close'].iloc[-1]
+            company_name = stock.info.get('longName', '不明な会社名')
             current_price = stock.history(period="1d")['Close'].iloc[-1]
+
             
             # 必要なデータを取得
             net_income = financials.loc['Net Income'].iloc[0]
