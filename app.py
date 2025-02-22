@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
+import  time
 
 def get_dividends_from_minkabu(stock_code):
     url = f"https://minkabu.jp/stock/{stock_code}/dividend"
@@ -199,6 +200,9 @@ if st.button("データ取得"):
                 plt.ylim(0, 100)  # 最大値を100%に設定
                 plt.gca().set_xticklabels([f"{date.year}年{date.month}月" for date in equity_ratio_3y.index])
                 st.pyplot(plt)
+                        # リクエスト間に1秒待機
+        time.sleep(1)
+
                 
     except Exception as e:
         st.error(f"データを取得できませんでした: {e}")
